@@ -1,3 +1,4 @@
+# KR2: Гузаирова
 import os
 import socket
 
@@ -17,14 +18,32 @@ r = redis.Redis(
 
 @app.route("/health")
 def health():
-    return "ok\n"
+    return "ok\n", 200
+
+
+@app.route("/ready")
+def ready():
+    try:
+        r.ping()
+    except redis.RedisError:
+        return "redis unavailable\n", 503
+
+    return "ok\n", 200
 
 
 @app.route("/")
 def index():
-    hits = r.incr("hits")
+    try:
+        hits = r.incr("hits")
+    except redis.RedisError:
+        app.logger.exception("Redis operation failed")
+        return "counter temporarily unavailable\n", 503
+
     student = os.getenv("STUDENT", "unknown")
-    return f"KR2 | {student} | container {socket.gethostname()} | hits: {hits}\n"
+    return (
+        f"KR2 | {student} | container "
+        f"{socket.gethostname()} | hits: {hits}\n"
+    )
 
 
 @app.route("/whoami")
