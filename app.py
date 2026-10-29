@@ -1,3 +1,4 @@
+# KR2: Гузаирова
 import os
 import socket
 

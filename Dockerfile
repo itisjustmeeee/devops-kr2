@@ -5,7 +5,12 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+RUN groupadd --system app && \
+    useradd --system --gid app --create-home --home-dir /home/app app
+
+COPY --chown=app:app . .
+
+USER app:app
 
 EXPOSE 8002
 CMD ["gunicorn", "--bind", "0.0.0.0:8002", "app:app"]
